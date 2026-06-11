@@ -25,8 +25,9 @@ dist/
 .eggs/
 wheels/
 
-# ── Jupyter ──────────────────────────────────────────────────
+# ── Jupyter (notebooks kept locally, not pushed to GitHub) ───
 .ipynb_checkpoints/
+*.ipynb
 
 # ── OS Files ─────────────────────────────────────────────────
 .DS_Store
@@ -50,7 +51,7 @@ Desktop.ini
 *.log
 logs/
 
-# ── Scratch / Helper Scripts (not needed in production) ──────
+# ── Local dev / helper scripts (not needed in production) ────
 test_api.py
 retrain_model.py
 inspect_nb.py
@@ -58,5 +59,6 @@ inspect_nb.py
 # ── Vercel ───────────────────────────────────────────────────
 .vercel/
 
-# ── NOTE: bank_model.pkl and finalisedaimlrawdataset.xlsx ────
-# are intentionally INCLUDED in git — Vercel needs them at build time
+# ── NOTE ─────────────────────────────────────────────────────
+# bank_model.pkl and finalisedaimlrawdataset.xlsx are
+# intentionally INCLUDED — Vercel needs them at build time.
