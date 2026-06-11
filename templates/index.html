@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>BranchIQ — Bank Branch Performance Intelligence</title>
+  <meta name="description" content="AI-powered bank branch performance prediction platform. Analyse 24 branch metrics across five categories to generate a comprehensive performance score." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+
+<!-- ============================================================
+     NAVBAR
+     ============================================================ -->
+<nav class="navbar" role="navigation" aria-label="Main navigation">
+  <div class="navbar-inner">
+    <a href="/" class="nav-brand" aria-label="BranchIQ Home">
+      <div class="nav-logo" aria-hidden="true">
+        <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+          <path d="M3 21H21M3 10H21M5 6L12 3L19 6M4 10V21M8 10V21M12 10V21M16 10V21M20 10V21"
+                stroke="#0C2040" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+        </svg>
+      </div>
+      <div>
+        <span class="nav-title">BranchIQ</span>
+        <span class="nav-sub">Performance Analytics</span>
+      </div>
+    </a>
+    <div class="nav-right">
+      <span class="nav-badge">ML Powered</span>
+      <span class="nav-model">Linear Regression &middot; scikit-learn</span>
+    </div>
+  </div>
+</nav>
+
+<!-- ============================================================
+     PAGE HEADER
+     ============================================================ -->
+<header class="page-header">
+  <div class="header-inner">
+    <div class="header-text">
+      <p class="header-eyebrow">Performance Intelligence Platform</p>
+      <h1>Branch Performance Predictor</h1>
+      <p>Enter your branch metrics across five operational categories to receive an AI-powered performance score and management insights.</p>
+    </div>
+    <div class="header-stats" aria-label="Dataset statistics">
+      <div class="stat-chip">
+        <span class="stat-value">310</span>
+        <span class="stat-label">Training Samples</span>
+      </div>
+      <div class="stat-chip">
+        <span class="stat-value">24</span>
+        <span class="stat-label">Features</span>
+      </div>
+      <div class="stat-chip">
+        <span class="stat-value">98.2%</span>
+        <span class="stat-label">Model R&sup2;</span>
+      </div>
+      <div class="stat-chip">
+        <span class="stat-value">27.5 &ndash; 57.0</span>
+        <span class="stat-label">Score Range</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ============================================================
+     MAIN CONTENT
+     ============================================================ -->
+<main class="content-wrapper">
+  <div class="content-grid">
+
+    <!-- FORM PANEL -->
+    <section class="form-panel" aria-label="Branch metrics input form">
+
+      <div class="panel-header">
+        <div class="panel-header-text">
+          <h2>Branch Metrics Input</h2>
+          <p>Complete all fields or leave any blank to use dataset averages.</p>
+        </div>
+        <div class="panel-progress" aria-label="Form progress">
+          {% for group_name in feature_groups.keys() %}
+          <div class="progress-dot {% if loop.first %}active{% endif %}"
+               data-tab="{{ loop.index }}"
+               title="{{ group_name }}"></div>
+          {% endfor %}
+        </div>
+      </div>
+
+      <div class="section-tabs" role="tablist" aria-label="Metric categories">
+        {% for group_name in feature_groups.keys() %}
+        <button class="tab-btn {% if loop.first %}active{% endif %}"
+                data-tab="{{ loop.index }}"
+                role="tab"
+                aria-selected="{{ 'true' if loop.first else 'false' }}"
+                id="tab-btn-{{ loop.index }}">{{ group_name }}</button>
+        {% endfor %}
+      </div>
+
+      <form id="prediction-form" novalidate>
+        {% for group_name, group_features in feature_groups.items() %}
+        <div class="tab-content {% if loop.first %}active{% endif %}"
+             data-tab-content="{{ loop.index }}"
+             role="tabpanel"
+             aria-labelledby="tab-btn-{{ loop.index }}">
+
+          <div class="fields-grid">
+            {% for feature in group_features %}
+            <div class="field-card">
+              <div class="field-header">
+                <label class="field-label" for="{{ feature }}">{{ feature.replace('_', ' ') }}</label>
+                <div class="field-tip" title="{{ feature_descriptions[feature] }}">?</div>
+              </div>
+              <p class="field-hint">{{ feature_descriptions[feature] }}</p>
+              <input type="number" step="any"
+                     id="{{ feature }}" name="{{ feature }}"
+                     class="field-input"
+                     placeholder="{{ '{:,.2f}'.format(feature_means[feature]) }}"
+                     aria-label="{{ feature.replace('_', ' ') }}" />
+              <p class="field-meta">Dataset avg: {{ '{:,.2f}'.format(feature_means[feature]) }}</p>
+            </div>
+            {% endfor %}
+          </div>
+
+          <div class="tab-nav-row">
+            {% if not loop.first %}
+            <button type="button" class="btn-secondary tab-prev-btn"
+                    data-tab="{{ loop.index - 1 }}">&#8592; Previous</button>
+            {% endif %}
+            {% if not loop.last %}
+            <button type="button" class="btn-primary tab-next-btn"
+                    data-tab="{{ loop.index + 1 }}">Next &#8594;</button>
+            {% endif %}
+          </div>
+        </div>
+        {% endfor %}
+
+        <div class="action-bar">
+          <button type="button" id="clear-btn" class="btn-ghost">Clear All</button>
+          <button type="button" id="sample-btn" class="btn-secondary">Load Sample Data</button>
+          <button type="submit" id="predict-btn" class="btn-predict">
+            <span id="btn-text">Analyze Performance</span>
+            <span id="btn-spinner" class="spinner" style="display:none;" aria-hidden="true"></span>
+          </button>
+        </div>
+      </form>
+    </section>
+
+    <!-- RESULTS PANEL -->
+    <aside class="results-panel" aria-label="Performance analysis results" aria-live="polite">
+
+      <!-- Placeholder -->
+      <div id="result-placeholder" class="result-placeholder">
+        <div class="placeholder-icon" aria-hidden="true">
+          <svg width="52" height="52" viewBox="0 0 24 24" fill="none">
+            <rect x="3" y="12" width="4" height="9" rx="1" fill="#BDC9D8"/>
+            <rect x="10" y="7" width="4" height="14" rx="1" fill="#8EA4B8"/>
+            <rect x="17" y="3" width="4" height="18" rx="1" fill="#627892"/>
+            <path d="M2 22h20" stroke="#BDC9D8" stroke-width="1.5" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <h3>Performance Analysis</h3>
+        <p>Fill in your branch metrics and click <strong>Analyze Performance</strong> to generate an ML-powered performance score with full analytics.</p>
+        <div class="placeholder-steps" role="list">
+          <div class="step" role="listitem">
+            <span class="step-num">1</span>
+            <span>Enter metrics across all five sections</span>
+          </div>
+          <div class="step" role="listitem">
+            <span class="step-num">2</span>
+            <span>Click <strong>Analyze Performance</strong></span>
+          </div>
+          <div class="step" role="listitem">
+            <span class="step-num">3</span>
+            <span>View score, tier, and detailed analytics</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Result Card -->
+      <div id="result-card" class="result-card" style="display:none;">
+
+        <div class="result-card-header">
+          <div class="result-card-header-icon" aria-hidden="true">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none">
+              <path d="M3 21H21M3 10H21M5 6L12 3L19 6M4 10V21M8 10V21M12 10V21M16 10V21M20 10V21"
+                    stroke="#C9A830" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+            </svg>
+          </div>
+          <div>
+            <h3>Performance Result</h3>
+            <p>ML model analysis complete</p>
+          </div>
+        </div>
+
+        <div class="result-card-body">
+
+          <!-- Gauge -->
+          <!--
+            Semicircle: center (115,118), radius 90
+            Path: M 25 118 A 90 90 0 0 1 205 118
+            Arc length: pi * 90 = 282.74
+          -->
+          <div class="gauge-container" aria-hidden="true">
+            <svg class="gauge-svg" viewBox="-5 0 240 128" aria-label="Performance score gauge">
+              <path class="gauge-track" d="M 25 118 A 90 90 0 0 1 205 118"/>
+              <path class="gauge-fill" id="gauge-fill" d="M 25 118 A 90 90 0 0 1 205 118"/>
+              <text x="22"  y="128" class="gauge-end-label" text-anchor="start">27.5</text>
+              <text x="208" y="128" class="gauge-end-label" text-anchor="end">57.0</text>
+              <text x="115" y="88"  class="gauge-score"     id="gauge-score-text" text-anchor="middle">--</text>
+              <text x="115" y="108" class="gauge-score-label" text-anchor="middle">Performance Score</text>
+            </svg>
+          </div>
+
+          <!-- Tier Badge -->
+          <div class="tier-container">
+            <div id="tier-badge" class="tier-badge" role="status">--</div>
+            <p id="tier-description" class="tier-description"></p>
+          </div>
+
+          <!-- Score Breakdown -->
+          <div class="score-breakdown">
+            <div class="score-row">
+              <span class="score-row-label">Predicted Score</span>
+              <span class="score-row-value highlight" id="score-value">--</span>
+            </div>
+            <div class="score-row">
+              <span class="score-row-label">vs Dataset Average (42.27)</span>
+              <span class="score-row-value" id="score-vs-avg">--</span>
+            </div>
+            <div class="score-row">
+              <span class="score-row-label">Percentile Rank</span>
+              <span class="score-row-value" id="score-pct">--</span>
+            </div>
+            <div class="score-row">
+              <span class="score-row-label">Score Range</span>
+              <span class="score-row-value">27.53 &ndash; 56.94</span>
+            </div>
+            <div class="score-row">
+              <span class="score-row-label">Model R&sup2; (accuracy)</span>
+              <span class="score-row-value" id="score-r2">--</span>
+            </div>
+          </div>
+
+          <!-- Score Bar -->
+          <div class="score-bar-wrapper" aria-hidden="true">
+            <div class="score-bar-header">
+              <span>Poor</span><span>Below Avg</span><span>Good</span><span>Excellent</span>
+            </div>
+            <div class="score-bar-track">
+              <div class="score-bar-zones">
+                <div class="zone zone-poor"></div>
+                <div class="zone zone-below-avg"></div>
+                <div class="zone zone-good"></div>
+                <div class="zone zone-excellent"></div>
+              </div>
+              <div class="score-marker" id="score-marker"></div>
+            </div>
+            <div class="score-bar-ticks">
+              <span>27.5</span><span>35.0</span><span>42.0</span><span>50.0</span><span>57.0</span>
+            </div>
+          </div>
+
+        </div><!-- /card-body -->
+
+        <div class="result-card-footer">
+          <button type="button" id="new-prediction-btn" class="btn-secondary">
+            &larr; New Analysis
+          </button>
+        </div>
+      </div><!-- /result-card -->
+
+    </aside>
+  </div><!-- /content-grid -->
+
+  <!-- ============================================================
+       DETAILED ANALYSIS SECTION
+       ============================================================ -->
+  <section id="detailed-analysis" class="detailed-analysis" style="display:none;" aria-live="polite">
+
+    <div class="da-section-header">
+      <div>
+        <h2>Detailed Analysis Report</h2>
+        <p>Comprehensive breakdown of your branch's performance, model metrics, and dataset comparison</p>
+      </div>
+      <button type="button" id="collapse-da-btn" class="btn-ghost da-collapse-btn">
+        Hide Details
+      </button>
+    </div>
+
+    <!-- Row 1: three summary cards -->
+    <div class="da-top-grid">
+
+      <!-- Card: Model Performance -->
+      <div class="da-card">
+        <div class="da-card-title">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"
+                  stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+          Model Performance
+        </div>
+        <div class="da-metrics">
+          <div class="da-metric-item da-metric-accent">
+            <span class="da-metric-val" id="da-r2">--</span>
+            <span class="da-metric-lbl">R&sup2; Score</span>
+          </div>
+          <div class="da-metric-item da-metric-accent">
+            <span class="da-metric-val" id="da-rmse">--</span>
+            <span class="da-metric-lbl">RMSE</span>
+          </div>
+          <div class="da-metric-item">
+            <span class="da-metric-val" id="da-n-train">248</span>
+            <span class="da-metric-lbl">Train Samples</span>
+          </div>
+          <div class="da-metric-item">
+            <span class="da-metric-val" id="da-n-test">62</span>
+            <span class="da-metric-lbl">Test Samples</span>
+          </div>
+        </div>
+        <div class="da-algo-tag">Linear Regression &middot; 24 Features &middot; scikit-learn</div>
+      </div>
+
+      <!-- Card: Score Distribution -->
+      <div class="da-card">
+        <div class="da-card-title">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <path d="M3 3v18h18M7 16l4-4 4 4 4-6" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/>
+          </svg>
+          Dataset Tier Distribution
+        </div>
+        <div id="da-tier-bars" class="da-tier-bars"></div>
+        <div class="da-dist-footer">
+          <span>Mean: 42.27</span>
+          <span>Std Dev: 5.22</span>
+          <span>N = 310</span>
+        </div>
+      </div>
+
+      <!-- Card: Branch Positioning -->
+      <div class="da-card">
+        <div class="da-card-title">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+            <circle cx="12" cy="12" r="9" stroke="currentColor" stroke-width="1.8"/>
+            <path d="M12 8v4l3 3" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+          </svg>
+          Branch Positioning
+        </div>
+        <div id="da-positioning" class="da-positioning"></div>
+      </div>
+
+    </div><!-- /da-top-grid -->
+
+    <!-- Row 2: Feature Comparison (full width) -->
+    <div class="da-card da-feature-card">
+      <div class="da-card-title">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" aria-hidden="true">
+          <path d="M4 6h16M4 12h16M4 18h16" stroke="currentColor" stroke-width="1.8" stroke-linecap="round"/>
+        </svg>
+        Feature Comparison &mdash; Your Branch vs. Dataset Average
+      </div>
+      <p class="da-card-subtitle">
+        Ranked by deviation from dataset mean. Bars show distance in standard deviations (&sigma;).
+        Green = above average &middot; Red = below average &middot; Grey label = default (dataset average used).
+      </p>
+      <div id="da-feature-bars" class="da-feature-bars"></div>
+    </div>
+
+  </section>
+  <!-- /detailed-analysis -->
+
+</main>
+
+<!-- ============================================================
+     FOOTER
+     ============================================================ -->
+<footer class="site-footer">
+  <div class="footer-inner">
+    <span><span class="footer-brand">BranchIQ</span> &nbsp;&middot;&nbsp; Bank Branch Performance Intelligence</span>
+    <div class="footer-links">
+      <span>Linear Regression Model</span>
+      <span>scikit-learn 1.5</span>
+      <span>Flask 3.x</span>
+    </div>
+  </div>
+</footer>
+
+<!-- Toast -->
+<div id="toast" class="toast toast-info" role="alert" aria-live="assertive"></div>
+
+<script src="/static/main.js"></script>
+</body>
+</html>
