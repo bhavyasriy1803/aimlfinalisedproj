@@ -632,7 +632,8 @@ body {
    DETAILED ANALYSIS SECTION
    ============================================================ */
 .detailed-analysis {
-  padding: 0 var(--s6) var(--s12);
+  margin-top: var(--s6);
+  padding: var(--s4) var(--s6) var(--s12);
   animation: fadeUp .4s ease;
 }
 
