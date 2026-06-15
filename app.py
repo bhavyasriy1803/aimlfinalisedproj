@@ -275,4 +275,5 @@ def api_feature_stats():
 
 
 if __name__ == "__main__":
+    # Trigger model reload
     app.run(debug=True)
