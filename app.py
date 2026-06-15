@@ -246,6 +246,40 @@ def api_sample_data():
     return jsonify(sample)
 
 
+@app.route("/api/branch-data/<branch_id>", methods=["GET"])
+def api_branch_data(branch_id):
+    try:
+        # Convert to float first, then int if possible (e.g. "1871" or "1871.0" -> 1871)
+        b_id = int(float(branch_id))
+    except ValueError:
+        b_id = str(branch_id).strip()
+
+    # Search by direct matching
+    matched = training_df[training_df["Branch_ID"] == b_id]
+    if len(matched) == 0:
+        # Fallback to string matching
+        matched = training_df[training_df["Branch_ID"].astype(str).str.strip() == str(branch_id).strip()]
+
+    if len(matched) == 0:
+        return jsonify({"error": f"Branch '{branch_id}' not found in dataset"}), 404
+
+    row = matched.iloc[0]
+    sample = {col: round(float(row[col]), 4) for col in FEATURE_COLUMNS if pd.notna(row[col])}
+    
+    # Format Branch_ID nicely
+    val = row["Branch_ID"]
+    if pd.notna(val):
+        try:
+            sample["Branch_ID"] = int(val) if float(val).is_integer() else val
+        except:
+            sample["Branch_ID"] = str(val)
+    else:
+        sample["Branch_ID"] = branch_id
+
+    return jsonify(sample)
+
+
+
 
 @app.route("/api/model-stats", methods=["GET"])
 def api_model_stats():

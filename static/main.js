@@ -458,3 +458,41 @@ if (downloadReportBtn) {
     });
   });
 }
+
+/* ============================================================
+   BRANCH AUTO-LOAD ON TYPE
+   ============================================================ */
+const branchInput = document.getElementById('Branch_ID');
+if (branchInput) {
+  const loadBranchData = async () => {
+    const val = branchInput.value.trim();
+    if (!val) return;
+
+    try {
+      const res = await fetch(`/api/branch-data/${encodeURIComponent(val)}`);
+      if (!res.ok) {
+        const err = await res.json();
+        showToast(err.error || `Branch '${val}' not found`, 'error');
+        return;
+      }
+      const data = await res.json();
+      Object.entries(data).forEach(([key, val]) => {
+        const el = document.getElementById(key);
+        if (el && key !== 'Branch_ID') {
+          el.value = typeof val === 'number' ? parseFloat(val.toFixed(4)) : val;
+        }
+      });
+      showToast(`Automatically loaded data for Branch ${val}`, 'success');
+    } catch (err) {
+      console.error(err);
+    }
+  };
+
+  branchInput.addEventListener('change', loadBranchData);
+  branchInput.addEventListener('keyup', (e) => {
+    if (e.key === 'Enter') {
+      loadBranchData();
+    }
+  });
+}
+
