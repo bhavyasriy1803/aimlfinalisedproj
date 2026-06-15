@@ -178,6 +178,8 @@ def home():
         score_min=SCORE_MIN,
         score_max=SCORE_MAX,
         score_mean=round(SCORE_MEAN, 2),
+        score_std=round(SCORE_STD, 2),
+        n_samples=len(training_df),
     )
 
 

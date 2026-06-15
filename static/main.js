@@ -182,6 +182,14 @@ function renderDetailedAnalysis(result) {
       : 'Detailed Analysis Report';
   }
 
+  // Update footer statistics dynamically
+  const meanLabel = document.getElementById('da-mean-label');
+  const stdLabel  = document.getElementById('da-std-label');
+  const nLabel    = document.getElementById('da-n-label');
+  if (meanLabel && result.score_mean) meanLabel.textContent = `Mean: ${result.score_mean.toFixed(2)}`;
+  if (stdLabel && result.score_std)   stdLabel.textContent  = `Std Dev: ${result.score_std.toFixed(2)}`;
+  if (nLabel && result.n_samples)     nLabel.textContent    = `N = ${result.n_samples}`;
+
   // -- Model Performance --
 
 
