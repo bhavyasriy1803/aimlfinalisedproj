@@ -651,10 +651,10 @@ body {
 .da-section-header p { font-size: 13px; color: var(--gray-500); }
 .da-collapse-btn { padding: 8px 16px; font-size: 12px; }
 
-/* Three-column top grid */
+/* Two-column top grid */
 .da-top-grid {
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
+  grid-template-columns: repeat(2, 1fr);
   gap: var(--s5);
   margin-bottom: var(--s5);
 }
