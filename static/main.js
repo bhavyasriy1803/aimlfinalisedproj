@@ -6,7 +6,7 @@
 /* ── Constants ───────────────────────────────────────────── */
 const SCORE_MIN   = 27.53;
 const SCORE_MAX   = 56.94;
-const GAUGE_TOTAL = 282.74;   // pi * radius(90)
+const GAUGE_TOTAL = 452.39;   // 2 * pi * radius(72)
 
 /* ── DOM ─────────────────────────────────────────────────── */
 const tabBtns        = document.querySelectorAll('.tab-btn');
@@ -128,7 +128,7 @@ function renderResult(result) {
   // Gauge fill (with brief delay so transition fires)
   setTimeout(() => {
     const pct  = clamp(score_percent, 0, 100);
-    const fill = document.getElementById('gauge-fill');
+    const fill = document.getElementById('score-ring-fill');
     fill.style.strokeDashoffset = GAUGE_TOTAL * (1 - pct / 100);
     fill.style.stroke = tierColor(tier);
   }, 60);
@@ -290,7 +290,7 @@ document.getElementById('new-prediction-btn').addEventListener('click', () => {
   detailedAnalysis.style.display  = 'none';
 
   // Reset gauge
-  const fill = document.getElementById('gauge-fill');
+  const fill = document.getElementById('score-ring-fill');
   fill.style.strokeDashoffset = GAUGE_TOTAL;
   fill.style.stroke = '';
   document.getElementById('gauge-score-text').textContent = '--';
@@ -334,7 +334,7 @@ function clamp(v, lo, hi) {
   return Math.max(lo, Math.min(hi, v));
 }
 function tierColor(tier) {
-  return ({ 'Excellent': '#B89020', 'Good': '#16A34A', 'Below Average': '#EA580C', 'Poor': '#DC2626' })[tier] || '#B89020';
+  return ({ 'Excellent': '#2563eb', 'Good': '#16A34A', 'Below Average': '#EA580C', 'Poor': '#DC2626' })[tier] || '#2563eb';
 }
 function fmtNum(n) {
   if (Math.abs(n) >= 1000) return n.toLocaleString(undefined, { maximumFractionDigits: 0 });
@@ -350,4 +350,94 @@ function animateCounter(el, from, to, duration) {
     if (progress < 1) requestAnimationFrame(tick);
   };
   requestAnimationFrame(tick);
+}
+
+/* ============================================================
+   DARK THEME TOGGLE
+   ============================================================ */
+const themeToggleBtn = document.getElementById('theme-toggle');
+if (themeToggleBtn) {
+  const iconLight = document.getElementById('theme-icon-light');
+  const iconDark = document.getElementById('theme-icon-dark');
+
+  function setTheme(isDark) {
+    if (isDark) {
+      document.documentElement.classList.add('dark-theme');
+      iconLight.style.display = 'block';
+      iconDark.style.display = 'none';
+      localStorage.setItem('theme', 'dark');
+    } else {
+      document.documentElement.classList.remove('dark-theme');
+      iconLight.style.display = 'none';
+      iconDark.style.display = 'block';
+      localStorage.setItem('theme', 'light');
+    }
+  }
+
+  if (localStorage.getItem('theme') === 'dark') {
+    setTheme(true);
+  }
+
+  themeToggleBtn.addEventListener('click', () => {
+    const isDark = document.documentElement.classList.contains('dark-theme');
+    setTheme(!isDark);
+  });
+}
+
+/* ============================================================
+   PDF EXPORT
+   ============================================================ */
+const downloadReportBtn = document.getElementById('download-report-btn');
+if (downloadReportBtn) {
+  downloadReportBtn.addEventListener('click', () => {
+    const resultCardElement = document.getElementById('result-card');
+    const daElement = document.getElementById('detailed-analysis');
+    
+    const printContainer = document.createElement('div');
+    printContainer.style.padding = '20px';
+    printContainer.style.background = document.documentElement.classList.contains('dark-theme') ? '#020617' : '#ffffff';
+    
+    const rcClone = resultCardElement.cloneNode(true);
+    const daClone = daElement.cloneNode(true);
+    
+    const footer = rcClone.querySelector('.result-card-footer');
+    if(footer) footer.remove();
+    const daHeaderBtn = daClone.querySelector('.da-collapse-btn');
+    if(daHeaderBtn) daHeaderBtn.remove();
+    
+    daClone.style.display = 'block';
+    
+    const title = document.createElement('h2');
+    title.textContent = 'BranchIQ Performance Report';
+    title.style.fontFamily = 'Inter, sans-serif';
+    title.style.color = document.documentElement.classList.contains('dark-theme') ? '#F8FAFC' : '#1E293B';
+    title.style.marginBottom = '20px';
+    title.style.textAlign = 'center';
+    
+    printContainer.appendChild(title);
+    printContainer.appendChild(rcClone);
+    printContainer.appendChild(daClone);
+
+    const opt = {
+      margin:       10,
+      filename:     'branch-performance-report.pdf',
+      image:        { type: 'jpeg', quality: 0.98 },
+      html2canvas:  { scale: 2, useCORS: true },
+      jsPDF:        { unit: 'mm', format: 'a4', orientation: 'portrait' }
+    };
+    
+    const origText = downloadReportBtn.textContent;
+    downloadReportBtn.textContent = 'Generating PDF...';
+    downloadReportBtn.disabled = true;
+    
+    html2pdf().set(opt).from(printContainer).save().then(() => {
+      downloadReportBtn.textContent = origText;
+      downloadReportBtn.disabled = false;
+      showToast('PDF Report downloaded successfully!', 'success');
+    }).catch(err => {
+      downloadReportBtn.textContent = origText;
+      downloadReportBtn.disabled = false;
+      showToast('Error generating PDF.', 'error');
+    });
+  });
 }
