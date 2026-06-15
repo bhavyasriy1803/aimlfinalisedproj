@@ -118,6 +118,11 @@ form.addEventListener('submit', async (e) => {
 function renderResult(result) {
   const { prediction, tier, description, score_percent, score_mean, model_r2, percentile } = result;
 
+  // Branch name
+  const branchName = document.getElementById('Branch_ID').value.trim();
+  const resultTitle = document.getElementById('result-branch-name');
+  resultTitle.textContent = branchName ? branchName : 'Performance Result';
+
   // Show card, hide placeholder
   resultPlaceholder.style.display = 'none';
   resultCard.style.display        = 'block';
@@ -167,6 +172,15 @@ function renderResult(result) {
    ============================================================ */
 function renderDetailedAnalysis(result) {
   detailedAnalysis.style.display = 'block';
+
+  // Update section title with branch name
+  const branchName = document.getElementById('Branch_ID').value.trim();
+  const daHeader = detailedAnalysis.querySelector('.da-section-header h2');
+  if (daHeader) {
+    daHeader.textContent = branchName
+      ? `Detailed Analysis — ${branchName}`
+      : 'Detailed Analysis Report';
+  }
 
   // -- Model Performance --
 
@@ -408,7 +422,10 @@ if (downloadReportBtn) {
     daClone.style.display = 'block';
     
     const title = document.createElement('h2');
-    title.textContent = 'BranchIQ Performance Report';
+    const branchName = document.getElementById('Branch_ID').value.trim();
+    title.textContent = branchName
+      ? `BranchIQ Report — ${branchName}`
+      : 'BranchIQ Performance Report';
     title.style.fontFamily = 'Inter, sans-serif';
     title.style.color = document.documentElement.classList.contains('dark-theme') ? '#F8FAFC' : '#1E293B';
     title.style.marginBottom = '20px';

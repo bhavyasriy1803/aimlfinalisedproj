@@ -231,14 +231,20 @@ def api_predict():
 
 @app.route("/api/sample-data", methods=["GET"])
 def api_sample_data():
-    sample = (
-        training_df[FEATURE_COLUMNS]
-        .sample(1)
-        .iloc[0]
-        .round(4)
-        .to_dict()
-    )
+    row = training_df.sample(1).iloc[0]
+    sample = {col: round(float(row[col]), 4) for col in FEATURE_COLUMNS if pd.notna(row[col])}
+    if "Branch_ID" in training_df.columns:
+        val = row["Branch_ID"]
+        if pd.notna(val):
+            try:
+                # If it's a float like 1001.0, convert to int to display nicely
+                sample["Branch_ID"] = int(val) if float(val).is_integer() else val
+            except:
+                sample["Branch_ID"] = str(val)
+        else:
+            sample["Branch_ID"] = ""
     return jsonify(sample)
+
 
 
 @app.route("/api/model-stats", methods=["GET"])

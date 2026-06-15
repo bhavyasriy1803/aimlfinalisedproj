@@ -89,6 +89,15 @@
         </div>
       </div>
 
+      <!-- Branch Name Field -->
+      <div class="branch-name-field">
+        <label class="field-label" for="Branch_ID">Branch Name / ID</label>
+        <input type="text" id="Branch_ID" name="Branch_ID"
+               class="field-input branch-name-input"
+               placeholder="e.g. Mumbai Downtown Branch"
+               aria-label="Branch Name or ID" />
+      </div>
+
       <div class="section-tabs" role="tablist" aria-label="Metric categories">
         {% for group_name in feature_groups.keys() %}
         <button class="tab-btn {% if loop.first %}active{% endif %}"
@@ -190,7 +199,7 @@
             </svg>
           </div>
           <div>
-            <h3>Performance Result</h3>
+            <h3 id="result-branch-name">Performance Result</h3>
             <p>ML model analysis complete</p>
           </div>
         </div>
