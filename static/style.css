@@ -178,13 +178,14 @@ body {
 .content-wrapper {
   max-width: 1300px;
   margin: 0 auto;
-  padding: var(--s8) var(--s6);
+  padding: var(--s8) var(--s6) 0;
 }
 .content-grid {
   display: grid;
   grid-template-columns: 1fr 370px;
   gap: var(--s6);
   align-items: start;
+  margin-bottom: 0;
 }
 @media(max-width:960px){
   .content-grid { grid-template-columns:1fr; }
