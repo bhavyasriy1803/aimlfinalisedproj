@@ -149,7 +149,7 @@ function renderResult(result) {
   vsEl.style.color = diff >= 0 ? '#15803D' : '#B91C1C';
 
   document.getElementById('score-pct').textContent = percentile + 'th percentile';
-  document.getElementById('score-r2').textContent  = (model_r2 * 100).toFixed(2) + '%';
+
 
   // Score bar marker
   setTimeout(() => {
@@ -169,10 +169,7 @@ function renderDetailedAnalysis(result) {
   detailedAnalysis.style.display = 'block';
 
   // -- Model Performance --
-  document.getElementById('da-r2').textContent     = result.model_r2.toFixed(4);
-  document.getElementById('da-rmse').textContent   = result.model_rmse.toFixed(4);
-  document.getElementById('da-n-train').textContent = result.n_train;
-  document.getElementById('da-n-test').textContent  = result.n_test;
+
 
   // -- Tier Distribution --
   const tierBarsEl = document.getElementById('da-tier-bars');
