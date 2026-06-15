@@ -464,15 +464,19 @@ if (downloadReportBtn) {
    ============================================================ */
 const branchInput = document.getElementById('Branch_ID');
 if (branchInput) {
-  const loadBranchData = async () => {
+  let debounceTimeout = null;
+
+  const loadBranchData = async (isSilent = false) => {
     const val = branchInput.value.trim();
     if (!val) return;
 
     try {
       const res = await fetch(`/api/branch-data/${encodeURIComponent(val)}`);
       if (!res.ok) {
-        const err = await res.json();
-        showToast(err.error || `Branch '${val}' not found`, 'error');
+        if (!isSilent) {
+          const err = await res.json();
+          showToast(err.error || `Branch '${val}' not found`, 'error');
+        }
         return;
       }
       const data = await res.json();
@@ -488,10 +492,25 @@ if (branchInput) {
     }
   };
 
-  branchInput.addEventListener('change', loadBranchData);
+  // Silent search as user is typing, debounced to 500ms
+  branchInput.addEventListener('input', () => {
+    clearTimeout(debounceTimeout);
+    debounceTimeout = setTimeout(() => {
+      loadBranchData(true);
+    }, 500);
+  });
+
+  // Explicit action (clicking away/change) performs non-silent load
+  branchInput.addEventListener('change', () => {
+    clearTimeout(debounceTimeout);
+    loadBranchData(false);
+  });
+
+  // Explicit action (Enter key) performs non-silent load
   branchInput.addEventListener('keyup', (e) => {
     if (e.key === 'Enter') {
-      loadBranchData();
+      clearTimeout(debounceTimeout);
+      loadBranchData(false);
     }
   });
 }
