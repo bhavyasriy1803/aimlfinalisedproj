@@ -172,3 +172,18 @@ branchiq/
 | Features | 24 |
 
 Performance tiers: **Excellent** ≥ 50 · **Good** 42–50 · **Below Average** 35–42 · **Poor** < 35
+
+### Model Performance Matrix
+
+During the training phase (documented in the Jupyter Notebook), we used **GridSearchCV** for hyperparameter tuning and evaluated three different models to find the most optimal one for our dataset. 
+
+Here is the exact performance matrix comparing the models:
+
+| Model | R² Score (Accuracy) | Mean Squared Error (MSE) | Root Mean Squared Error (RMSE) |
+| :--- | :--- | :--- | :--- |
+| **Linear Regression (Optimal)** | **0.9735 (97.3%)** | **0.694** | **0.833** |
+| **Random Forest** | 0.8265 (82.6%) | 4.545 | 2.132 |
+| **Decision Tree** | 0.5920 (59.2%) | 10.691 | 3.269 |
+
+**Why Linear Regression is the Best:**
+Linear Regression was finalized as the optimal model because it significantly outperformed the ensemble and tree-based models, proving that the relationship between our 24 branch metrics and the final performance score is highly linear.
